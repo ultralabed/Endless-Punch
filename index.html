@@ -114,20 +114,21 @@ p{margin:0;font-size:15px;line-height:1.7;color:#ccd;max-width:330px}
   <div class="money">💰 <span class="mny">0</span></div>
   <button id="bStage">闖關模式</button>
   <button id="bEndless" class="b2">無盡模式</button>
+  <button id="bDiff" class="b3" style="font-size:16px;padding:10px"></button>
   <div class="row"><button id="bShop" class="b4">🛒 商店</button><button id="bTech" class="b4">🌳 科技樹</button></div>
   <div class="row"><button id="bRec" class="b3">🏆 紀錄</button><button id="bHow" class="b3">❓ 玩法</button><button id="bSnd" class="b3">🔊</button></div>
 </div>
 
 <div class="ov" id="stages"><h2>選擇關卡</h2><div id="grid"></div><button class="b3 back">返回</button></div>
 
-<div class="ov" id="shop"><h2>🛒 道具商店</h2><div class="money">💰 <span class="mny">0</span></div>
-  <div id="shopList"></div><p>道具買了會一直留著，打架時按下面的按鈕用掉。每種最多帶 9 個。</p><button class="b3 back">返回</button></div>
+<div class="ov" id="shop"><h2>🛒 商店</h2><div class="money">💰 <span class="mny">0</span></div>
+  <div id="shopList"></div><p>道具在打架時按下面的按鈕用掉，每種最多帶 9 個。</p><button class="b3 back">返回</button></div>
 
 <div class="ov" id="tech"><h2>🌳 科技樹</h2><div class="money">💰 <span class="mny">0</span></div>
   <div id="tree"></div><div id="tInfo"></div><button class="b3 back">返回</button></div>
 
 <div class="ov" id="how"><h2>玩法</h2>
-  <p>👆 <b>手指在螢幕上拖</b>＝小子往那邊走<br>👊 壞蛋靠近，<b>拳頭會自動打</b><br>💰 打倒壞蛋會掉錢，走過去撿<br>
+  <p>👆 <b>手指在螢幕上拖</b>＝小子往那邊走<br>👊 壞蛋靠近，<b>拳頭會自動打</b><br>🏹 到商店買<b>弓箭或槍</b>，就能遠遠地自動射<br>💰 打倒壞蛋會掉錢，走過去撿<br>
   🔥 打越多下怒氣越滿，滿了按它＝大爆拳<br>🛒 用錢到<b>商店</b>買道具，打架時按來用<br>🌳 用錢到<b>科技樹</b>升級，會永遠變強<br><br>
   🔴 小兵　🟡 跑很快　🟣 血很厚<br>🟢 會丟球（要躲開！）　⚫ 魔王</p>
   <button class="b3 back">知道了</button></div>
@@ -148,7 +149,7 @@ const $=id=>document.getElementById(id);
 const C=$('c'),MAXSTAGE=30,KEY='boomfist_v2',ARENA=28;
 
 /* ================= 存檔 ================= */
-const fresh=()=>({unlocked:1,stages:{},endless:{best:0,kills:0},total:0,mute:false,money:0,earned:0,items:{},tech:{}});
+const fresh=()=>({weapons:{},weapon:'fist',diff:1,unlocked:1,stages:{},endless:{best:0,kills:0},total:0,mute:false,money:0,earned:0,items:{},tech:{}});
 let save=fresh();
 try{const s=JSON.parse(localStorage.getItem(KEY));if(s)save=Object.assign(save,s)}catch(e){}
 function store(){try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}document.querySelectorAll('.mny').forEach(m=>m.textContent=save.money)}
@@ -179,6 +180,15 @@ const ITEMS={
   rage:{n:'狂暴藥',e:'⚡',d:'8 秒內出拳 2 倍快、更痛',price:90},
   shield:{n:'護盾',e:'🫧',d:'5 秒內不會受傷',price:100}
 };
+const WEAPONS={
+  fist:{n:'拳頭',e:'👊',d:'要靠很近才打得到，但是很痛',price:0,dmg:1.6},
+  bow:{n:'弓箭',e:'🏹',d:'射很遠，一箭可以穿過 3 個壞蛋',price:150,range:9,rate:1.4,dmg:1.8,speed:22,pierce:3,fury:1},
+  pistol:{n:'手槍',e:'🔫',d:'遠遠地一發一發打',price:300,range:8,rate:1,dmg:1.2,speed:28,fury:1},
+  shotgun:{n:'散彈槍',e:'💥',d:'一次噴 5 顆子彈，近的超痛',price:600,range:6,rate:1.8,dmg:.9,speed:24,pellets:5,spread:.55,fury:.4},
+  mg:{n:'機關槍',e:'🔥',d:'噠噠噠噠！射超快',price:1000,range:9,rate:.35,dmg:.55,speed:30,fury:.4}
+};
+const DIFF=[{n:'簡單',cnt:.7,hp:.8,dmg:.8,coin:.8},{n:'普通',cnt:1,hp:1,dmg:1,coin:1},{n:'困難',cnt:1.5,hp:1.4,dmg:1.3,coin:1.5},{n:'地獄',cnt:2,hp:2,dmg:1.7,coin:2.2}];
+const D=()=>DIFF[save.diff]||DIFF[1];
 const tl=k=>save.tech[k]||0;
 const techCost=k=>Math.round(TECH[k].base*Math.pow(1.7,tl(k))/5)*5;
 const itemPrice=k=>Math.round(ITEMS[k].price*(1-.1*tl('f3'))/5)*5;
@@ -214,6 +224,8 @@ const seq=(a,d,type,vol)=>a.forEach((f,i)=>tone(f,f,d*1.4,type,vol,ac&&ac.curren
 let lastHit=0;
 const sfx={
   hit(c){if(!ac||ac.currentTime-lastHit<.05)return;lastHit=ac.currentTime;noise(.08,1400,'lowpass',.6);tone(c?320:190,55,.11,'sine',.7);if(c)tone(1200,500,.08,'square',.12)},
+  gun(){if(!ac||ac.currentTime-lastHit<.04)return;noise(.06,3000,'highpass',.3);tone(900,180,.07,'square',.12)},
+  bow(){tone(700,220,.12,'triangle',.3)},
   ko(){noise(.14,900,'lowpass',.6);tone(140,40,.18,'sine',.6)},
   hurt(){tone(260,70,.25,'sawtooth',.3);noise(.15,500,'lowpass',.5)},
   click(){tone(660,880,.06,'square',.15)},
@@ -279,7 +291,7 @@ function setTheme(i){const t=THEMES[i%THEMES.length];groundMat.color.setHex(t[0]
 // 角色零件
 const GEO={body:new THREE.CapsuleGeometry(.32,.5,4,10),head:new THREE.SphereGeometry(.3,14,12),eye:new THREE.SphereGeometry(.05,6,6),fist:new THREE.SphereGeometry(.17,10,8),
   leg:new THREE.CylinderGeometry(.09,.09,.45,6),shadow:new THREE.CircleGeometry(.5,16),band:new THREE.TorusGeometry(.29,.06,6,16),horn:new THREE.ConeGeometry(.1,.35,6),
-  coin:new THREE.CylinderGeometry(.22,.22,.07,12),part:new THREE.BoxGeometry(.16,.16,.16),ball:new THREE.SphereGeometry(.22,10,8),ring:new THREE.RingGeometry(.86,1,40),bub:new THREE.SphereGeometry(1.15,18,14)};
+  coin:new THREE.CylinderGeometry(.22,.22,.07,12),part:new THREE.BoxGeometry(.16,.16,.16),ball:new THREE.SphereGeometry(.22,10,8),ring:new THREE.RingGeometry(.86,1,40),bullet:new THREE.BoxGeometry(.11,.11,.5),gun:new THREE.BoxGeometry(.09,.13,.3),bow:new THREE.TorusGeometry(.38,.035,6,12,Math.PI),bub:new THREE.SphereGeometry(1.15,18,14)};
 const shadowMat=new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.28,depthWrite:false}),eyeMat=new THREE.MeshBasicMaterial({color:0x111118});
 function makeChar(col,skin,o={}){
   const g=new THREE.Group(),m=mat(col),sk=mat(skin),add=(geo,mt,x,y,z)=>{const me=new THREE.Mesh(geo,mt);me.position.set(x,y,z);g.add(me);return me};
@@ -303,6 +315,7 @@ const bubble=new THREE.Mesh(GEO.bub,new THREE.MeshBasicMaterial({color:0x74c0fc,
 
 // 物件池
 const coinMat=new THREE.MeshLambertMaterial({color:0xffd23f,emissive:0x8a6a00}),ballMat=new THREE.MeshBasicMaterial({color:0x51cf66}),ballMat2=new THREE.MeshBasicMaterial({color:0xff6b6b});
+const bulletMat=new THREE.MeshBasicMaterial({color:0xffe066}),arrowMat=new THREE.MeshBasicMaterial({color:0x8a5a2b});let weaponMesh=null;
 const pMats=[0xffffff,0xffd23f,0xff6b6b,0x74c0fc].map(c=>new THREE.MeshBasicMaterial({color:c}));
 const parts=[];for(let i=0;i<110;i++){const m=new THREE.Mesh(GEO.part,pMats[0]);m.visible=false;scene.add(m);parts.push({m,life:0,vx:0,vy:0,vz:0})}
 let pi=0;
@@ -319,29 +332,31 @@ const TYPES={
   spit:{hp:16,spd:2.1,dmg:8,sz:.9,col:0x30a46c,skin:0xc9f2d5,coin:5,pts:25},
   boss:{hp:420,spd:2.1,dmg:20,sz:2.3,col:0x2a2838,skin:0x6b6680,coin:60,pts:300}
 };
-const G={state:'menu',mode:'stage',stage:1,en:[],coins:[],balls:[],dead:[],score:0,kills:0,money:0,toSpawn:0,need:0,spawnT:0,bossOut:false,boss:null,fury:0,
+const G={state:'menu',mode:'stage',stage:1,shots:[],furyK:1,en:[],coins:[],balls:[],dead:[],score:0,kills:0,money:0,toSpawn:0,need:0,spawnT:0,bossOut:false,boss:null,fury:0,
   shake:0,endT:0,time:0,nextBoss:60,freezeT:0,rageT:0,shieldT:0,revived:false,itemCd:0,used:0};
 const H={x:0,z:0,hp:100,rot:0,walk:0,moving:false,atkT:0,punchT:0,side:1,faceT:0,st:stats()};
 const joy={on:false,id:null,ox:0,oy:0,x:0,z:0},keys={};
 
-function clearWorld(){for(const e of G.en)scene.remove(e.g);for(const d of G.dead)scene.remove(d.g);for(const c of G.coins)scene.remove(c.m);for(const b of G.balls)scene.remove(b.m);G.en=[];G.dead=[];G.coins=[];G.balls=[];$('fx').innerHTML=''}
+function clearWorld(){for(const e of G.en)scene.remove(e.g);for(const d of G.dead)scene.remove(d.g);for(const c of G.coins)scene.remove(c.m);for(const b of G.balls)scene.remove(b.m);for(const b of G.shots)scene.remove(b.m);G.shots=[];G.en=[];G.dead=[];G.coins=[];G.balls=[];$('fx').innerHTML=''}
 function startGame(mode,stage){
   initAudio();musicOn=true;clearWorld();
   Object.assign(G,{state:'play',mode,stage:stage||1,score:0,kills:0,money:0,spawnT:1.2,bossOut:false,boss:null,fury:0,shake:0,endT:0,time:0,nextBoss:60,freezeT:0,rageT:0,shieldT:0,revived:false,itemCd:0,used:0});
   H.st=stats();Object.assign(H,{x:0,z:0,hp:H.st.hp,rot:0,atkT:.5,punchT:0,faceT:0});heroMesh.visible=true;heroMesh.rotation.set(0,0,0);heroMesh.position.set(0,0,0);
-  G.need=G.toSpawn=mode==='stage'?15+G.stage*5:Infinity;
+  G.need=G.toSpawn=mode==='stage'?Math.round((25+G.stage*8)*D().cnt):Infinity;
+  const fR=heroMesh.userData.fR;if(weaponMesh)fR.remove(weaponMesh);weaponMesh=null;const W=WEAPONS[save.weapon]||WEAPONS.fist;G.furyK=W.fury||1;
+  if(W.range){weaponMesh=save.weapon==='bow'?new THREE.Mesh(GEO.bow,mat(0x8a5a2b)):new THREE.Mesh(GEO.gun,mat(0x22222c));if(save.weapon==='bow'){weaponMesh.rotation.set(0,Math.PI/2,Math.PI/2);weaponMesh.position.z=.1}else{weaponMesh.position.set(0,.04,.22);if(save.weapon!=='pistol'){weaponMesh.scale.set(1.2,1,1.7);weaponMesh.position.z=.3}}fR.add(weaponMesh)}
   setTheme(mode==='stage'?Math.floor((G.stage-1)/5):0);
   joy.on=false;$('joy').style.display='none';$('bossw').style.display='none';$('prog').style.display=mode==='stage'?'':'none';
   $('hint').style.opacity=save.total<30?1:0;buildBar();showOv(null);$('hud').classList.add('on');
 }
 const lvl=()=>G.mode==='stage'?G.stage:1+Math.floor(G.kills/15);
-const hpMul=()=>1+.2*(lvl()-1),dmgMul=()=>1+.07*(lvl()-1);
+const hpMul=()=>(1+.24*(lvl()-1))*D().hp,dmgMul=()=>(1+.07*(lvl()-1))*D().dmg;
 
 function spawn(type,x,z){
   const T=TYPES[type];
   if(x===undefined){const a=Math.random()*6.283,d=13+Math.random()*3;x=H.x+Math.cos(a)*d;z=H.z+Math.sin(a)*d;const l=Math.hypot(x,z);if(l>ARENA+4){x*=(ARENA+4)/l;z*=(ARENA+4)/l}}
   const g=makeChar(T.col,T.skin,{horn:type==='boss',eye:type==='boss'?0xff3b3b:0});g.scale.setScalar(T.sz);g.position.set(x,0,z);scene.add(g);
-  const e={type,T,g,x,z,hp:T.hp*hpMul()*(type==='boss'&&G.mode==='endless'?.6:1),r:.42*T.sz,spd:T.spd*(.9+Math.random()*.2)*Math.min(1.5,1+lvl()*.012),cd:.4,shot:1+Math.random()*2,walk:Math.random()*9,punchT:0,flash:0,kx:0,kz:0};
+  const e={type,T,g,x,z,hp:T.hp*hpMul()*(type==='boss'&&G.mode==='endless'?.6:1),r:.42*T.sz,spd:T.spd*(.9+Math.random()*.2)*Math.min(1.6,1+lvl()*.02),cd:.4,shot:1+Math.random()*2,walk:Math.random()*9,punchT:0,flash:0,kx:0,kz:0};
   e.max=e.hp;G.en.push(e);return e;
 }
 function pickType(){
@@ -364,14 +379,14 @@ function damage(e,dmg,crit,quiet){
   dmg=Math.round(dmg);e.hp-=dmg;e.flash=.12;
   const dx=e.x-H.x,dz=e.z-H.z,l=Math.hypot(dx,dz)||1,kb=e.type==='boss'?1.5:e.type==='tank'?4:7;e.kx=dx/l*kb;e.kz=dz/l*kb;if(e.type!=='boss')e.cd=Math.max(e.cd,.45);
   float(e.x,1.9*e.T.sz,e.z,dmg+(crit?'!':''),crit?'c':'');burst(e.x,1*e.T.sz,e.z,crit?6:3,crit?1:0);
-  if(!quiet){sfx.hit(crit);if(G.fury<100){G.fury=Math.min(100,G.fury+2.5*H.st.fury);if(G.fury>=100)sfx.ready()}}
+  if(!quiet){sfx.hit(crit);if(G.fury<100){G.fury=Math.min(100,G.fury+2.5*H.st.fury*G.furyK);if(G.fury>=100)sfx.ready()}}
   if(e.hp<=0)kill(e);
 }
 function kill(e){
   G.en.splice(G.en.indexOf(e),1);G.kills++;save.total++;G.score+=e.T.pts*lvl();
   const dx=e.x-H.x,dz=e.z-H.z,l=Math.hypot(dx,dz)||1;
   G.dead.push({g:e.g,vx:dx/l*9,vz:dz/l*9,vy:7,t:0});sfx.ko();burst(e.x,1,e.z,8,1);
-  const val=Math.max(1,Math.round(e.T.coin*(1+lvl()*.06)*H.st.coin)),n=e.type==='boss'?8:1;
+  const val=Math.max(1,Math.round(e.T.coin*(1+lvl()*.06)*H.st.coin*D().coin)),n=e.type==='boss'?8:1;
   for(let i=0;i<n;i++){const m=new THREE.Mesh(GEO.coin,coinMat);m.position.set(e.x,.8,e.z);scene.add(m);const a=Math.random()*6.28,s=n>1?3+Math.random()*3:1;
     G.coins.push({m,x:e.x,z:e.z,y:.8,vx:Math.cos(a)*s,vz:Math.sin(a)*s,vy:5,val:Math.ceil(val/n),t:0})}
   if(e.type==='boss'){G.boss=null;G.shake=1;buzz(80);sfx.fury();$('bossw').style.display='none';ring(e.x,e.z,9,0xffd23f);
@@ -426,22 +441,33 @@ function update(dt){
   // 自動攻擊
   H.atkT-=dt;H.punchT=Math.max(0,H.punchT-dt);H.faceT-=dt;
   if(H.atkT<=0){
-    const inR=[];for(const e of G.en){const d=Math.hypot(e.x-H.x,e.z-H.z)-e.r;if(d<=st.range)inR.push([d,e])}
+    const W=WEAPONS[save.weapon]||WEAPONS.fist,rng=W.range?W.range*st.range/2.3:st.range;
+    const inR=[];for(const e of G.en){const d=Math.hypot(e.x-H.x,e.z-H.z)-e.r;if(d<=rng)inR.push([d,e])}
     if(inR.length){
       inR.sort((a,b)=>a[0]-b[0]);const t0=inR[0][1];
-      H.rot=Math.atan2(t0.x-H.x,t0.z-H.z);H.faceT=.3;H.punchT=.14;H.side=-H.side;H.atkT=st.atk/(rage?2:1);
+      H.rot=Math.atan2(t0.x-H.x,t0.z-H.z);H.faceT=.3;H.punchT=.14;H.side=W.range?1:-H.side;H.atkT=st.atk*(W.rate||1)/(rage?2:1);
       for(let i=0;i<Math.min(st.multi,inR.length);i++){
-        const e=inR[i][1],crit=Math.random()<st.crit,d=st.dmg*(rage?1.5:1)*(crit?2:1)*(.9+Math.random()*.2),ex=e.x,ez=e.z;
-        damage(e,d,crit);
-        if(st.splash&&i===0){ring(ex,ez,st.splash,0xffffff);for(const o of G.en.slice())if(o!==e&&Math.hypot(o.x-ex,o.z-ez)<st.splash+o.r)damage(o,d*.5,false,true)}
+        const e=inR[i][1],crit=Math.random()<st.crit,d=st.dmg*(W.dmg||1)*(rage?1.5:1)*(crit?2:1)*(.9+Math.random()*.2),ex=e.x,ez=e.z;
+        if(W.range){const a0=Math.atan2(ex-H.x,ez-H.z),n=W.pellets||1;
+          for(let j=0;j<n;j++){const a=a0+(n>1?(j/(n-1)-.5)*W.spread:0),m=new THREE.Mesh(GEO.bullet,W.pierce?arrowMat:bulletMat);m.rotation.y=a;if(W.pierce)m.scale.z=2.2;scene.add(m);
+            G.shots.push({m,x:H.x+Math.sin(a)*.8,z:H.z+Math.cos(a)*.8,vx:Math.sin(a)*W.speed,vz:Math.cos(a)*W.speed,dmg:d,crit,pierce:W.pierce||1,hit:[],life:rng/W.speed*1.25})}
+        }else{damage(e,d,crit);splash(e,ex,ez,d)}
       }
+      if(W.range)(W.pierce?sfx.bow:sfx.gun)();
     }
   }
+  // 子彈
+  for(const b of G.shots){
+    for(let k=0;k<2&&b.life>0;k++){b.x+=b.vx*dt*.5;b.z+=b.vz*dt*.5;b.life-=dt*.5;
+      for(const e of G.en.slice())if(!b.hit.includes(e)&&Math.hypot(e.x-b.x,e.z-b.z)<e.r+.3){b.hit.push(e);const ex=e.x,ez=e.z;damage(e,b.dmg,b.crit);splash(e,ex,ez,b.dmg);if(--b.pierce<=0){b.life=0;break}}}
+    b.m.position.set(b.x,1.05,b.z);if(b.life<=0)scene.remove(b.m)}
+  G.shots=G.shots.filter(b=>b.life>0);
   // 出怪
   G.spawnT-=dt;
-  if(G.spawnT<=0&&G.en.length<45&&(G.toSpawn>0||G.boss)){
-    let iv=Math.max(.26,1.35-lvl()*.036);if(G.boss)iv*=2.2;G.spawnT=iv*(.7+Math.random()*.6);
-    spawn(G.boss?(Math.random()<.7?'grunt':'runner'):pickType());if(!G.boss)G.toSpawn--;
+  if(G.spawnT<=0&&G.en.length<(save.diff>=2?70:55)&&(G.toSpawn>0||G.boss)){
+    const L=lvl(),c=D().cnt;let iv=Math.max(.3,1.15-L*.03)/c;if(G.boss)iv*=1.8;G.spawnT=iv*(.7+Math.random()*.6);
+    let n=1+(Math.random()<Math.min(.85,.1+L*.06)?1:0)+(L>=6&&Math.random()<.4?1:0)+(L>=12&&Math.random()<.4?1:0);
+    while(n-->0&&(G.toSpawn>0||G.boss)){spawn(G.boss?(Math.random()<.7?'grunt':'runner'):pickType());if(!G.boss)G.toSpawn--}
   }
   if(G.mode==='endless'&&!G.bossOut&&G.kills>=G.nextBoss)callBoss();
   if(G.mode==='stage'&&G.toSpawn<=0&&!G.en.length){
@@ -472,6 +498,7 @@ function update(dt){
   G.balls=G.balls.filter(b=>b.t<=4);
   if(G.boss)$('bossw').firstChild.style.width=Math.max(0,G.boss.hp/G.boss.max*100)+'%';
 }
+function splash(e,ex,ez,d){const r=H.st.splash;if(!r)return;ring(ex,ez,r,0xffffff);for(const o of G.en.slice())if(o!==e&&Math.hypot(o.x-ex,o.z-ez)<r+o.r)damage(o,d*.5,false,true)}
 function shoot(x,z,ux,uz,spd,dmg,m){const me=new THREE.Mesh(GEO.ball,m);scene.add(me);G.balls.push({m:me,x:x+ux*.6,z:z+uz*.6,vx:ux*spd,vz:uz*spd,dmg,t:0});if(m===ballMat)sfx.shoot()}
 function updateCoins(dt){
   for(const c of G.coins){c.t+=dt;const dx=H.x-c.x,dz=H.z-c.z,d=Math.hypot(dx,dz)||1;
@@ -486,7 +513,7 @@ function finish(win){
   G.state='over';let isNew=false,body='',bonus=0;$('hud').classList.remove('on');
   if(G.mode==='stage'){
     const st=save.stages[G.stage]||{stars:0,best:0};
-    if(win){const r=H.hp/H.st.hp,stars=r>.66?3:r>.33?2:1;bonus=(20+G.stage*10)*(st.stars?1:2);G.score+=stars*100*G.stage;
+    if(win){const r=H.hp/H.st.hp,stars=r>.66?3:r>.33?2:1;bonus=Math.round((20+G.stage*10)*(st.stars?1:2)*D().coin);G.score+=stars*100*G.stage;
       isNew=G.score>st.best;st.stars=Math.max(st.stars,stars);st.best=Math.max(st.best,G.score);save.stages[G.stage]=st;
       save.unlocked=Math.max(save.unlocked,Math.min(MAXSTAGE,G.stage+1));$('rStars').innerHTML='★'.repeat(stars)+'<i>'+'★'.repeat(3-stars)+'</i>'}
     $('rTitle').textContent=win?`第 ${G.stage} 關 過關！`:`第 ${G.stage} 關 失敗…`;$('rStars').style.display=win?'':'none';$('bNext').style.display=win&&G.stage<MAXSTAGE?'':'none';
@@ -563,7 +590,12 @@ function buildGrid(){
     if(open)b.onclick=()=>{sfx.click();startGame('stage',i)};gd.appendChild(b)}
 }
 function buildShop(){
-  const L=$('shopList');L.innerHTML='';
+  const L=$('shopList');L.innerHTML='<div style="font-weight:900;color:#ffd23f">🔫 武器（買一次永遠有，可以換）</div>';
+  for(const k in WEAPONS){const w=WEAPONS[k],own=k==='fist'||save.weapons[k],eq=save.weapon===k,d=document.createElement('div');d.className='it';
+    d.innerHTML=`<div class="e">${w.e}</div><div class="t"><b>${w.n}</b>${w.d}</div>`;
+    const b=document.createElement('button');b.textContent=eq?'使用中':own?'裝備':'💰 '+w.price;b.disabled=eq||(!own&&save.money<w.price);if(own)b.className='b2';
+    b.onclick=()=>{initAudio();if(!own){if(save.money<w.price){sfx.no();return}save.money-=w.price;save.weapons[k]=true}save.weapon=k;sfx.buy();store();buildShop()};d.appendChild(b);L.appendChild(d)}
+  L.insertAdjacentHTML('beforeend','<div style="font-weight:900;color:#ffd23f;margin-top:6px">🎒 道具（用掉就沒了）</div>');
   for(const k in ITEMS){const it=ITEMS[k],n=save.items[k]||0,p=itemPrice(k),d=document.createElement('div');d.className='it';
     d.innerHTML=`<div class="e">${it.e}</div><div class="t"><b>${it.n} <i>×${n}</i></b>${it.d}</div>`;
     const b=document.createElement('button');b.textContent=n>=9?'滿了':'💰 '+p;b.disabled=n>=9||save.money<p;
@@ -591,13 +623,15 @@ on('bShop2',()=>{backTo='result';buildShop();showOv('shop')});on('bTech2',()=>{b
 on('bRec',()=>{let stars=0,cleared=0,sum=0,tech=0;for(const k in save.stages){stars+=save.stages[k].stars;sum+=save.stages[k].best;if(save.stages[k].stars)cleared++}for(const k in save.tech)tech+=save.tech[k];
   $('recBody').innerHTML=`過關數<b>${cleared} / ${MAXSTAGE}</b><br>星星<b>★ ${stars} / ${MAXSTAGE*3}</b><br>闖關總分<b>${sum}</b><br>無盡最高分<b>${save.endless.best}</b><br>無盡最多打倒<b>${save.endless.kills}</b><br>總共打倒<b>${save.total}</b><br>總共賺過<b>💰 ${save.earned}</b><br>科技等級<b>${tech}</b>`;showOv('rec')});
 on('bSnd',()=>setMute(!save.mute));
-on('bReset',()=>{if(confirm('真的要把紀錄、錢、科技全部清掉嗎？')){const m=save.mute;save=fresh();save.mute=m;store();$('bRec').click()}});
+const showDiff=()=>{const d=D();$('bDiff').textContent=`難度：${d.n}（壞蛋 ×${d.cnt}、錢 ×${d.coin}）`};
+on('bDiff',()=>{save.diff=((save.diff||0)+1)%DIFF.length;store();showDiff()});showDiff();
+on('bReset',()=>{if(confirm('真的要把紀錄、錢、科技全部清掉嗎？')){const m=save.mute;save=fresh();save.mute=m;store();showDiff();$('bRec').click()}});
 on('bPause',()=>{if(G.state==='play')pauseGame()});on('bResume',resume);
 on('bRetryP',()=>{bank(0);store();startGame(G.mode,G.stage)});on('bQuit',toMenu);
 on('bNext',()=>startGame('stage',G.stage+1));on('bRetry',()=>startGame(G.mode,G.stage));on('bMenu',toMenu);
 document.querySelectorAll('.back').forEach(b=>b.addEventListener('click',()=>{sfx.click();showOv(backTo)}));
 setMute(save.mute);store();
-Object.assign(window,{G,H,save:()=>save,startGame,useItem,fury,joy,stats,TECH});
+Object.assign(window,{WEAPONS,G,H,save:()=>save,startGame,useItem,fury,joy,stats,TECH});
 requestAnimationFrame(loop);
 </script>
 </body>
