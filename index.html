@@ -56,7 +56,7 @@ p{margin:0;font-size:15px;line-height:1.7;color:#ccd;max-width:330px}
 .nd.own{filter:none;border-color:#69db7c;background:#2b8a3e}
 .nd.maxed{border-color:#ffd23f;background:#e67700}
 .nd.sel{outline:3px solid #fff;outline-offset:2px}
-#tInfo{background:rgba(255,255,255,.1);border-radius:14px;padding:10px 14px;width:min(360px,94vw);min-height:92px;display:flex;align-items:center;gap:10px;text-align:left;flex-shrink:0}
+#tInfo{position:sticky;top:0;z-index:5;background:#3a3f5c;border-radius:14px;padding:10px 14px;width:min(360px,94vw);min-height:92px;display:flex;align-items:center;gap:10px;text-align:left;flex-shrink:0}
 #tInfo div{flex:1;font-size:13px;line-height:1.45;color:#ccd}
 #tInfo div b{font-size:17px;color:#fff}
 #tInfo button{width:96px;padding:10px 0;font-size:15px;border-radius:12px}
@@ -125,7 +125,7 @@ p{margin:0;font-size:15px;line-height:1.7;color:#ccd;max-width:330px}
   <div id="shopList"></div><p>道具在打架時按下面的按鈕用掉，每種最多帶 9 個。</p><button class="b3 back">返回</button></div>
 
 <div class="ov" id="tech"><h2>🌳 科技樹</h2><div class="money">💰 <span class="mny">0</span></div>
-  <div id="tree"></div><div id="tInfo"></div><button class="b3 back">返回</button></div>
+  <div id="tInfo"></div><div id="tree"></div><button class="b3 back">返回</button></div>
 
 <div class="ov" id="how"><h2>玩法</h2>
   <p>👆 <b>手指在螢幕上拖</b>＝小子往那邊走<br>👊 壞蛋靠近，<b>拳頭會自動打</b><br>🏹 到商店買<b>弓箭或槍</b>，就能遠遠地自動射<br>💰 打倒壞蛋會掉錢，走過去撿<br>
@@ -156,22 +156,45 @@ function store(){try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}do
 
 /* ================= 科技樹 / 道具 資料 ================= */
 const TECH={
+  // 力量
   p1:{n:'鐵拳',e:'👊',d:'攻擊力 +20%',max:5,base:40,req:null,x:.5,y:1},
-  p2:{n:'快拳',e:'💨',d:'出拳速度 +12%',max:5,base:50,req:'p1',x:0,y:2},
+  p2:{n:'快拳',e:'💨',d:'攻擊速度 +12%',max:5,base:50,req:'p1',x:0,y:2},
   p3:{n:'長臂',e:'🦾',d:'打得到更遠 +10%',max:3,base:60,req:'p1',x:1,y:2},
   p4:{n:'爆擊',e:'💥',d:'爆擊機率 +8%（傷害 2 倍）',max:5,base:80,req:'p2',x:0,y:3},
-  p6:{n:'連環拳',e:'🥊',d:'一次多打 1 個壞蛋',max:2,base:150,req:'p3',x:1,y:3},
-  p5:{n:'震波拳',e:'🌀',d:'打中時旁邊的壞蛋也受傷',max:3,base:160,req:'p4',x:0,y:4},
+  p6:{n:'連環擊',e:'🥊',d:'一次多打 1 個壞蛋',max:2,base:150,req:'p3',x:1,y:3},
+  p10:{n:'重爆擊',e:'☄️',d:'爆擊傷害再 +50%',max:3,base:140,req:'p4',x:0,y:4},
+  p7:{n:'穿透',e:'🎯',d:'箭和子彈多穿過 1 個壞蛋',max:2,base:200,req:'p6',x:1,y:4},
+  p5:{n:'震波',e:'🌀',d:'打中時旁邊的壞蛋也受傷',max:3,base:160,req:'p10',x:0,y:5},
+  p9:{n:'斬殺',e:'🗡️',d:'壞蛋血剩不到 8% 就直接打倒',max:3,base:180,req:'p7',x:1,y:5},
+  p8:{n:'吸血',e:'🩸',d:'每打倒 1 個壞蛋補 1 滴血',max:3,base:220,req:'p5',x:0,y:6},
+  p11:{n:'巨人殺手',e:'🏔️',d:'打大隻的和魔王 +25% 傷害',max:3,base:220,req:'p9',x:1,y:6},
+  p12:{n:'武神',e:'🐉',d:'所有攻擊力再 +50%',max:1,base:1500,req:'p8',x:.5,y:7},
+  // 身體
   b1:{n:'強壯',e:'❤️',d:'血量 +20',max:5,base:40,req:null,x:2.5,y:1},
   b2:{n:'飛毛腿',e:'👟',d:'走路速度 +8%',max:4,base:50,req:'b1',x:2,y:2},
   b3:{n:'回血',e:'💚',d:'每秒自己補 1 滴血',max:3,base:70,req:'b1',x:3,y:2},
+  b7:{n:'閃避',e:'🍃',d:'8% 機率完全躲開攻擊',max:3,base:120,req:'b2',x:2,y:3},
   b4:{n:'鐵布衫',e:'🛡️',d:'受到的傷害 -10%',max:4,base:90,req:'b3',x:3,y:3},
-  b5:{n:'復活',e:'👼',d:'每場可以倒下後再站起來 1 次',max:1,base:400,req:'b4',x:3,y:4},
+  b10:{n:'擋球',e:'🏓',d:'被球打到的傷害 -25%',max:2,base:150,req:'b7',x:2,y:4},
+  b6:{n:'荊棘',e:'🌵',d:'打你的壞蛋自己也會痛',max:3,base:160,req:'b4',x:3,y:4},
+  b8:{n:'保命盾',e:'🆘',d:'血快沒時自動開護盾（每場 1 次）',max:1,base:350,req:'b10',x:2,y:5},
+  b5:{n:'復活',e:'👼',d:'每場可以倒下後再站起來 1 次',max:1,base:400,req:'b6',x:3,y:5},
+  b9:{n:'巨人體質',e:'🦣',d:'總血量再 +15%',max:3,base:240,req:'b8',x:2,y:6},
+  b12:{n:'鬥志',e:'😤',d:'血不到一半時攻擊力 +15%',max:3,base:240,req:'b5',x:3,y:6},
+  b11:{n:'鋼鐵之軀',e:'🤖',d:'傷害再 -20%，回血變 2 倍',max:1,base:1500,req:'b9',x:2.5,y:7},
+  // 財富
   f1:{n:'撿錢高手',e:'💰',d:'掉的錢 +20%',max:5,base:40,req:null,x:4.5,y:1},
   f2:{n:'磁鐵',e:'🧲',d:'更遠就能吸到錢 +30%',max:3,base:50,req:'f1',x:4,y:2},
   f3:{n:'殺價',e:'🏷️',d:'商店道具便宜 10%',max:3,base:70,req:'f1',x:5,y:2},
   f4:{n:'怒火',e:'🔥',d:'怒氣集得更快 +20%',max:3,base:90,req:'f2',x:4,y:3},
-  f5:{n:'紅利',e:'🎁',d:'每場結束多拿 10% 的錢',max:3,base:120,req:'f3',x:5,y:3}
+  f5:{n:'紅利',e:'🎁',d:'每場結束多拿 10% 的錢',max:3,base:120,req:'f3',x:5,y:3},
+  f9:{n:'熱身',e:'♨️',d:'開場就有 30% 怒氣',max:3,base:130,req:'f4',x:4,y:4},
+  f7:{n:'道具大師',e:'⏳',d:'冰凍、狂暴、護盾多撐 25% 時間',max:3,base:150,req:'f5',x:5,y:4},
+  f10:{n:'超級爆拳',e:'🌋',d:'大爆拳 +25% 傷害、範圍更大',max:3,base:200,req:'f9',x:4,y:5},
+  f8:{n:'省著用',e:'♻️',d:'用道具時 15% 機率不會少',max:3,base:200,req:'f7',x:5,y:5},
+  f6:{n:'大金幣',e:'🪙',d:'10% 機率掉 3 倍的錢',max:3,base:220,req:'f10',x:4,y:6},
+  f12:{n:'補給',e:'📦',d:'每場開始免費送 1 個隨機道具',max:1,base:500,req:'f8',x:5,y:6},
+  f11:{n:'財神',e:'🤑',d:'所有錢再 +50%',max:1,base:1500,req:'f6',x:4.5,y:7}
 };
 const ITEMS={
   potion:{n:'補血藥',e:'🧪',d:'馬上補回一半的血',price:50},
@@ -192,8 +215,12 @@ const D=()=>DIFF[save.diff]||DIFF[1];
 const tl=k=>save.tech[k]||0;
 const techCost=k=>Math.round(TECH[k].base*Math.pow(1.7,tl(k))/5)*5;
 const itemPrice=k=>Math.round(ITEMS[k].price*(1-.1*tl('f3'))/5)*5;
-function stats(){return{dmg:10*(1+.2*tl('p1')),atk:.42/(1+.12*tl('p2')),range:2.3*(1+.1*tl('p3')),crit:.08*tl('p4'),splash:tl('p5')?.9+.5*tl('p5'):0,multi:1+tl('p6'),
-  hp:100+20*tl('b1'),spd:5.2*(1+.08*tl('b2')),regen:tl('b3'),armor:1-.1*tl('b4'),revive:tl('b5'),coin:1+.2*tl('f1'),pick:2.4*(1+.3*tl('f2')),fury:1+.2*tl('f4'),interest:.1*tl('f5')}}
+function stats(){const u=tl('b11');return{dmg:10*(1+.2*tl('p1'))*(1+.5*tl('p12')),atk:.42/(1+.12*tl('p2')),range:2.3*(1+.1*tl('p3')),crit:.08*tl('p4'),critMul:2+.5*tl('p10'),splash:tl('p5')?.9+.5*tl('p5'):0,multi:1+tl('p6'),
+  pierce:tl('p7'),exec:.08*tl('p9'),leech:tl('p8'),giant:1+.25*tl('p11'),
+  hp:Math.round((100+20*tl('b1'))*(1+.15*tl('b9'))),spd:5.2*(1+.08*tl('b2')),regen:tl('b3')*(u?2:1),armor:(1-.1*tl('b4'))*(u?.8:1),revive:tl('b5'),
+  dodge:.08*tl('b7'),ballArmor:1-.25*tl('b10'),thorns:tl('b6'),autoShield:tl('b8'),grit:.15*tl('b12'),
+  coin:(1+.2*tl('f1'))*(1+.5*tl('f11')),pick:2.4*(1+.3*tl('f2')),fury:1+.2*tl('f4'),interest:.1*tl('f5'),
+  startFury:30*tl('f9'),furyPow:1+.25*tl('f10'),dur:1+.25*tl('f7'),keep:.15*tl('f8'),bigCoin:.1*tl('f6'),gift:tl('f12')}}
 
 /* ================= 聲音 (全部用程式合成) ================= */
 let ac=null,master=null,musicG=null,noiseBuf=null,musicOn=false,step=0,nextT=0;
@@ -341,7 +368,9 @@ function clearWorld(){for(const e of G.en)scene.remove(e.g);for(const d of G.dea
 function startGame(mode,stage){
   initAudio();musicOn=true;clearWorld();
   Object.assign(G,{state:'play',mode,stage:stage||1,score:0,kills:0,money:0,spawnT:1.2,bossOut:false,boss:null,fury:0,shake:0,endT:0,time:0,nextBoss:60,freezeT:0,rageT:0,shieldT:0,revived:false,itemCd:0,used:0});
-  H.st=stats();Object.assign(H,{x:0,z:0,hp:H.st.hp,rot:0,atkT:.5,punchT:0,faceT:0});heroMesh.visible=true;heroMesh.rotation.set(0,0,0);heroMesh.position.set(0,0,0);
+  H.st=stats();G.fury=Math.min(100,H.st.startFury);G.autoUsed=false;
+  if(H.st.gift){const ks=Object.keys(ITEMS),k=ks[Math.floor(Math.random()*ks.length)];save.items[k]=Math.min(9,(save.items[k]||0)+1);store();setTimeout(()=>float(H.x,3,H.z,'📦 送你 '+ITEMS[k].e,'big'),400)}
+  Object.assign(H,{x:0,z:0,hp:H.st.hp,rot:0,atkT:.5,punchT:0,faceT:0});heroMesh.visible=true;heroMesh.rotation.set(0,0,0);heroMesh.position.set(0,0,0);
   G.need=G.toSpawn=mode==='stage'?Math.round((25+G.stage*8)*D().cnt):Infinity;
   const fR=heroMesh.userData.fR;if(weaponMesh)fR.remove(weaponMesh);weaponMesh=null;const W=WEAPONS[save.weapon]||WEAPONS.fist;G.furyK=W.fury||1;
   if(W.range){weaponMesh=save.weapon==='bow'?new THREE.Mesh(GEO.bow,mat(0x8a5a2b)):new THREE.Mesh(GEO.gun,mat(0x22222c));if(save.weapon==='bow'){weaponMesh.rotation.set(0,Math.PI/2,Math.PI/2);weaponMesh.position.z=.1}else{weaponMesh.position.set(0,.04,.22);if(save.weapon!=='pistol'){weaponMesh.scale.set(1.2,1,1.7);weaponMesh.position.z=.3}}fR.add(weaponMesh)}
@@ -376,17 +405,18 @@ function float(x,y,z,txt,cls){
 }
 function damage(e,dmg,crit,quiet){
   if(e.hp<=0)return;
-  dmg=Math.round(dmg);e.hp-=dmg;e.flash=.12;
+  if(e.T.sz>1.3)dmg*=H.st.giant;dmg=Math.round(dmg);e.hp-=dmg;e.flash=.12;
+  if(e.hp>0&&e.type!=='boss'&&e.hp<e.max*H.st.exec){e.hp=0;float(e.x,2.4*e.T.sz,e.z,'斬！','c')}
   const dx=e.x-H.x,dz=e.z-H.z,l=Math.hypot(dx,dz)||1,kb=e.type==='boss'?1.5:e.type==='tank'?4:7;e.kx=dx/l*kb;e.kz=dz/l*kb;if(e.type!=='boss')e.cd=Math.max(e.cd,.45);
   float(e.x,1.9*e.T.sz,e.z,dmg+(crit?'!':''),crit?'c':'');burst(e.x,1*e.T.sz,e.z,crit?6:3,crit?1:0);
   if(!quiet){sfx.hit(crit);if(G.fury<100){G.fury=Math.min(100,G.fury+2.5*H.st.fury*G.furyK);if(G.fury>=100)sfx.ready()}}
   if(e.hp<=0)kill(e);
 }
 function kill(e){
-  G.en.splice(G.en.indexOf(e),1);G.kills++;save.total++;G.score+=e.T.pts*lvl();
+  G.en.splice(G.en.indexOf(e),1);G.kills++;if(H.st.leech&&H.hp>0)H.hp=Math.min(H.st.hp,H.hp+H.st.leech);save.total++;G.score+=e.T.pts*lvl();
   const dx=e.x-H.x,dz=e.z-H.z,l=Math.hypot(dx,dz)||1;
   G.dead.push({g:e.g,vx:dx/l*9,vz:dz/l*9,vy:7,t:0});sfx.ko();burst(e.x,1,e.z,8,1);
-  const val=Math.max(1,Math.round(e.T.coin*(1+lvl()*.06)*H.st.coin*D().coin)),n=e.type==='boss'?8:1;
+  const val=Math.max(1,Math.round(e.T.coin*(1+lvl()*.06)*H.st.coin*D().coin*(Math.random()<H.st.bigCoin?3:1))),n=e.type==='boss'?8:1;
   for(let i=0;i<n;i++){const m=new THREE.Mesh(GEO.coin,coinMat);m.position.set(e.x,.8,e.z);scene.add(m);const a=Math.random()*6.28,s=n>1?3+Math.random()*3:1;
     G.coins.push({m,x:e.x,z:e.z,y:.8,vx:Math.cos(a)*s,vz:Math.sin(a)*s,vy:5,val:Math.ceil(val/n),t:0})}
   if(e.type==='boss'){G.boss=null;G.shake=1;buzz(80);sfx.fury();$('bossw').style.display='none';ring(e.x,e.z,9,0xffd23f);
@@ -394,10 +424,12 @@ function kill(e){
     else for(const o of G.en.slice())damage(o,1e6,false,true)}
 }
 function heal(n){const b=H.hp;H.hp=Math.min(H.st.hp,H.hp+n);if(H.hp-b>=1)float(H.x,2.6,H.z,'+'+Math.round(H.hp-b),'h')}
-function hurt(d){
+function hurt(d,ball){
   if(G.shieldT>0||G.state!=='play')return;
+  if(Math.random()<H.st.dodge){float(H.x,2.4,H.z,'閃！','h');return}if(ball)d*=H.st.ballArmor;
   d=Math.max(1,Math.round(d*dmgMul()*H.st.armor));H.hp-=d;G.shake=Math.max(G.shake,.5);sfx.hurt();buzz(40);float(H.x,2.4,H.z,'-'+d,'r');
   $('red').style.opacity=.7;setTimeout(()=>$('red').style.opacity=0,120);
+  if(H.st.autoShield&&!G.autoUsed&&H.hp>0&&H.hp<H.st.hp*.3){G.autoUsed=true;G.shieldT=3*H.st.dur;float(H.x,3,H.z,'🆘 保命盾！','big');sfx.power()}
   if(H.hp<=0){
     if(H.st.revive&&!G.revived){G.revived=true;H.hp=H.st.hp*.5;G.shieldT=3;float(H.x,3,H.z,'👼 復活！','big');sfx.heal();blast(7,50,0xffffff);return}
     H.hp=0;G.state='dead';G.endT=1.3;musicOn=false;sfx.fail();
@@ -408,16 +440,16 @@ function blast(r,dmg,col){
   for(const e of G.en.slice()){if(Math.hypot(e.x-H.x,e.z-H.z)<r+e.r)damage(e,dmg*hpMul(),false,true)}
   for(const b of G.balls){scene.remove(b.m)}G.balls=[];
 }
-function fury(){if(G.state!=='play'||G.fury<100)return;G.fury=0;sfx.fury();buzz(120);float(H.x,3,H.z,'大爆拳！！','big');blast(9,H.st.dmg*8/hpMul()+60,0xff922b);H.punchT=.3}
+function fury(){if(G.state!=='play'||G.fury<100)return;G.fury=0;sfx.fury();buzz(120);float(H.x,3,H.z,'大爆拳！！','big');blast(9+tl('f10'),(H.st.dmg*8/hpMul()+60)*H.st.furyPow,0xff922b);H.punchT=.3}
 function useItem(k){
   if(G.state!=='play'||G.itemCd>0||!(save.items[k]>0))return;
   if(k==='potion'&&H.hp>=H.st.hp){sfx.no();return}
-  save.items[k]--;G.itemCd=.4;G.used++;store();
+  if(Math.random()<H.st.keep)float(H.x,3.6,H.z,'♻️ 沒用掉！','h');else save.items[k]--;G.itemCd=.4;G.used++;store();
   if(k==='potion'){heal(H.st.hp*.5);sfx.heal()}
   if(k==='bomb'){sfx.fury();buzz(100);float(H.x,3,H.z,'💣 轟！','big');blast(8,110,0xff6b6b)}
-  if(k==='ice'){G.freezeT=4;sfx.ice();float(H.x,3,H.z,'❄️ 結冰！','big');ring(H.x,H.z,14,0x74c0fc)}
-  if(k==='rage'){G.rageT=8;sfx.power();float(H.x,3,H.z,'⚡ 狂暴！','big')}
-  if(k==='shield'){G.shieldT=5;sfx.power();float(H.x,3,H.z,'🫧 護盾！','big')}
+  if(k==='ice'){G.freezeT=4*H.st.dur;sfx.ice();float(H.x,3,H.z,'❄️ 結冰！','big');ring(H.x,H.z,14,0x74c0fc)}
+  if(k==='rage'){G.rageT=8*H.st.dur;sfx.power();float(H.x,3,H.z,'⚡ 狂暴！','big')}
+  if(k==='shield'){G.shieldT=5*H.st.dur;sfx.power();float(H.x,3,H.z,'🫧 護盾！','big')}
   buildBar();
 }
 
@@ -447,10 +479,10 @@ function update(dt){
       inR.sort((a,b)=>a[0]-b[0]);const t0=inR[0][1];
       H.rot=Math.atan2(t0.x-H.x,t0.z-H.z);H.faceT=.3;H.punchT=.14;H.side=W.range?1:-H.side;H.atkT=st.atk*(W.rate||1)/(rage?2:1);
       for(let i=0;i<Math.min(st.multi,inR.length);i++){
-        const e=inR[i][1],crit=Math.random()<st.crit,d=st.dmg*(W.dmg||1)*(rage?1.5:1)*(crit?2:1)*(.9+Math.random()*.2),ex=e.x,ez=e.z;
+        const e=inR[i][1],crit=Math.random()<st.crit,d=st.dmg*(W.dmg||1)*(rage?1.5:1)*(crit?st.critMul:1)*(H.hp<st.hp*.5?1+st.grit:1)*(.9+Math.random()*.2),ex=e.x,ez=e.z;
         if(W.range){const a0=Math.atan2(ex-H.x,ez-H.z),n=W.pellets||1;
           for(let j=0;j<n;j++){const a=a0+(n>1?(j/(n-1)-.5)*W.spread:0),m=new THREE.Mesh(GEO.bullet,W.pierce?arrowMat:bulletMat);m.rotation.y=a;if(W.pierce)m.scale.z=2.2;scene.add(m);
-            G.shots.push({m,x:H.x+Math.sin(a)*.8,z:H.z+Math.cos(a)*.8,vx:Math.sin(a)*W.speed,vz:Math.cos(a)*W.speed,dmg:d,crit,pierce:W.pierce||1,hit:[],life:rng/W.speed*1.25})}
+            G.shots.push({m,x:H.x+Math.sin(a)*.8,z:H.z+Math.cos(a)*.8,vx:Math.sin(a)*W.speed,vz:Math.cos(a)*W.speed,dmg:d,crit,pierce:(W.pierce||1)+st.pierce,hit:[],life:rng/W.speed*1.25})}
         }else{damage(e,d,crit);splash(e,ex,ez,d)}
       }
       if(W.range)(W.pierce?sfx.bow:sfx.gun)();
@@ -476,8 +508,8 @@ function update(dt){
   }
   // 壞蛋
   const frozen=G.freezeT>0,E=G.en;
-  for(const e of E){
-    e.flash=Math.max(0,e.flash-dt);e.punchT=Math.max(0,e.punchT-dt);
+  for(const e of E.slice()){
+    if(e.hp<=0)continue;e.flash=Math.max(0,e.flash-dt);e.punchT=Math.max(0,e.punchT-dt);
     e.x+=e.kx*dt;e.z+=e.kz*dt;e.kx*=Math.pow(.0005,dt);e.kz*=Math.pow(.0005,dt);
     if(frozen)continue;
     const dx=H.x-e.x,dz=H.z-e.z,d=Math.hypot(dx,dz)||1,ux=dx/d,uz=dz/d;e.cd-=dt;e.walk+=dt;e.rot=Math.atan2(dx,dz);e.moving=false;
@@ -486,7 +518,7 @@ function update(dt){
       e.shot-=dt;if(e.shot<=0&&d<10){e.shot=2.4;e.punchT=.2;shoot(e.x,e.z,ux,uz,6.5,e.T.dmg,ballMat)}
     }else{
       if(d>e.r+.75){e.x+=ux*e.spd*dt;e.z+=uz*e.spd*dt;e.moving=true;e.cd=Math.max(e.cd,.3)}
-      else if(e.cd<=0){e.cd=1;e.punchT=.2;hurt(e.T.dmg)}
+      else if(e.cd<=0){e.cd=1;e.punchT=.2;hurt(e.T.dmg);if(H.st.thorns&&G.state==='play')damage(e,H.st.dmg*.5*H.st.thorns,false,true)}
       if(e.type==='boss'){e.shot-=dt;if(e.shot<=0){e.shot=3.5;sfx.shoot();for(let i=0;i<10;i++){const a=i/10*6.283+G.time;shoot(e.x,e.z,Math.cos(a),Math.sin(a),5,12,ballMat2)}}}
     }
   }
@@ -494,7 +526,7 @@ function update(dt){
     if(d2<m*m&&d2>1e-6){const d=Math.sqrt(d2),p=(m-d)/d*.5,wa=a.type==='boss'?.1:1,wb=b.type==='boss'?.1:1;a.x-=dx*p*wa;a.z-=dz*p*wa;b.x+=dx*p*wb;b.z+=dz*p*wb}}
   // 球
   for(const b of G.balls){b.x+=b.vx*dt;b.z+=b.vz*dt;b.t+=dt;b.m.position.set(b.x,.9,b.z);
-    if(Math.hypot(b.x-H.x,b.z-H.z)<.6){b.t=99;if(G.shieldT<=0)hurt(b.dmg);burst(b.x,.9,b.z,4,2)}if(b.t>4)scene.remove(b.m)}
+    if(Math.hypot(b.x-H.x,b.z-H.z)<.6){b.t=99;if(G.shieldT<=0)hurt(b.dmg,true);burst(b.x,.9,b.z,4,2)}if(b.t>4)scene.remove(b.m)}
   G.balls=G.balls.filter(b=>b.t<=4);
   if(G.boss)$('bossw').firstChild.style.width=Math.max(0,G.boss.hp/G.boss.max*100)+'%';
 }
@@ -603,7 +635,7 @@ function buildShop(){
 }
 let selT='p1';
 function buildTree(){
-  const T=$('tree'),cw=Math.min(60,(innerWidth-16)/6),rh=84,W=cw*6;T.style.width=W+'px';T.style.height=(rh*4+70)+'px';
+  const T=$('tree'),cw=Math.min(60,(innerWidth-16)/6),rh=78,W=cw*6;T.style.width=W+'px';T.style.height=(rh*6+125)+'px';
   const pos=k=>k?[TECH[k].x*cw+cw/2,(TECH[k].y-1)*rh+50+26]:null;let svg='',html='';
   [['👊 力量',0],['❤️ 身體',2],['💰 財富',4]].forEach(b=>html+=`<div class="bl" style="left:${b[1]*cw}px;width:${cw*2}px;top:0;font-size:15px">${b[0]}</div>`);
   for(const k in TECH){const t=TECH[k],[x,y]=pos(k),l=tl(k),av=!t.req||tl(t.req)>0;
