@@ -40,13 +40,19 @@ button:disabled{filter:grayscale(1);opacity:.5}
 .new{color:#ff6b6b;font-weight:900;font-size:20px;animation:bop .4s infinite alternate}
 p{margin:0;font-size:15px;line-height:1.7;color:#ccd;max-width:330px}
 /* 商店 */
-#shopList{display:flex;flex-direction:column;gap:8px;width:min(360px,94vw);flex-shrink:0}
+#shopList,.lst{display:flex;flex-direction:column;gap:8px;width:min(360px,94vw);flex-shrink:0}
 .it{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.09);border-radius:14px;padding:8px 10px;text-align:left}
 .it .e{font-size:32px;width:40px;text-align:center}
 .it .t{flex:1;font-size:13px;color:#ccd;line-height:1.35}
 .it .t b{font-size:16px;color:#fff;display:block}
 .it .t i{font-style:normal;color:#ffd23f}
 .it button{width:86px;padding:9px 0;font-size:15px;border-radius:12px}
+.it.col{flex-direction:column;align-items:stretch}
+.it .r{display:flex;align-items:center;gap:10px}
+.it .ws{display:flex;gap:4px}
+.it .ws button{width:auto;flex:1;padding:5px 0 3px;font-size:19px;border-radius:10px;box-shadow:0 3px 0 rgba(0,0,0,.45)}
+.it .ws button span{display:block;font-size:10px;font-weight:700}
+.row4 button{font-size:13px!important;padding:10px 2px!important}
 /* 科技樹 */
 #tree{position:relative;flex-shrink:0}
 #tree svg{position:absolute;inset:0;width:100%;height:100%}
@@ -116,6 +122,7 @@ p{margin:0;font-size:15px;line-height:1.7;color:#ccd;max-width:330px}
   <button id="bEndless" class="b2">無盡模式</button>
   <button id="bDiff" class="b3" style="font-size:16px;padding:10px"></button>
   <div class="row"><button id="bShop" class="b4">🛒 商店</button><button id="bTech" class="b4">🌳 科技樹</button></div>
+  <div class="row"><button id="bBase" class="b4">💪 強化</button><button id="bStaff" class="b4">👥 員工</button></div>
   <div class="row"><button id="bRec" class="b3">🏆 紀錄</button><button id="bHow" class="b3">❓ 玩法</button><button id="bSnd" class="b3">🔊</button></div>
 </div>
 
@@ -127,9 +134,15 @@ p{margin:0;font-size:15px;line-height:1.7;color:#ccd;max-width:330px}
 <div class="ov" id="tech"><h2>🌳 科技樹</h2><div class="money">💰 <span class="mny">0</span></div>
   <div id="tInfo"></div><div id="tree"></div><button class="b3 back">返回</button></div>
 
+<div class="ov" id="base"><h2>💪 基礎強化</h2><div class="money">💰 <span class="mny">0</span></div>
+  <div class="lst" id="baseList"></div><p>直接把小子的基本能力變強，可以升很多級。員工的攻擊力也會跟著變強。</p><button class="b3 back">返回</button></div>
+
+<div class="ov" id="staff"><h2>👥 員工</h2><div class="money">💰 <span class="mny">0</span></div>
+  <div class="lst" id="staffList"></div><p>員工會跟著你一起打壞蛋，不會受傷。幫每個員工買武器、升等級，他就更厲害。</p><button class="b3 back">返回</button></div>
+
 <div class="ov" id="how"><h2>玩法</h2>
   <p>👆 <b>手指在螢幕上拖</b>＝小子往那邊走<br>👊 壞蛋靠近，<b>拳頭會自動打</b><br>🏹 到商店買<b>弓箭或槍</b>，就能遠遠地自動射<br>💰 打倒壞蛋會掉錢，走過去撿<br>
-  🔥 打越多下怒氣越滿，滿了按它＝大爆拳<br>🛒 用錢到<b>商店</b>買道具，打架時按來用<br>🌳 用錢到<b>科技樹</b>升級，會永遠變強<br><br>
+  🔥 打越多下怒氣越滿，滿了按它＝大爆拳<br>🛒 用錢到<b>商店</b>買道具，打架時按來用<br>🌳 用錢到<b>科技樹</b>升級，會永遠變強<br>💪 <b>強化</b>可以直接加攻擊、血量<br>👥 請<b>員工</b>來幫你一起打，還能幫他買武器<br><br>
   🔴 小兵　🟡 跑很快　🟣 血很厚<br>🟢 會丟球（要躲開！）　⚫ 魔王</p>
   <button class="b3 back">知道了</button></div>
 
@@ -140,7 +153,7 @@ p{margin:0;font-size:15px;line-height:1.7;color:#ccd;max-width:330px}
 
 <div class="ov" id="result"><h2 id="rTitle"></h2><div class="stars" id="rStars"></div><div class="new" id="rNew">✨ 新紀錄！✨</div>
   <div class="stats" id="rBody"></div><button id="bNext">下一關</button><button id="bRetry" class="b2">再玩一次</button>
-  <div class="row"><button id="bShop2" class="b4">🛒 商店</button><button id="bTech2" class="b4">🌳 科技樹</button></div>
+  <div class="row row4"><button id="bShop2" class="b4">🛒<br>商店</button><button id="bTech2" class="b4">🌳<br>科技</button><button id="bBase2" class="b4">💪<br>強化</button><button id="bStaff2" class="b4">👥<br>員工</button></div>
   <button class="b3" id="bMenu">回主選單</button></div>
 
 <script type="module">
@@ -149,7 +162,7 @@ const $=id=>document.getElementById(id);
 const C=$('c'),MAXSTAGE=30,KEY='boomfist_v2',ARENA=28;
 
 /* ================= 存檔 ================= */
-const fresh=()=>({weapons:{},weapon:'fist',diff:1,unlocked:1,stages:{},endless:{best:0,kills:0},total:0,mute:false,money:0,earned:0,items:{},tech:{}});
+const fresh=()=>({base:{},staff:[],weapons:{},weapon:'fist',diff:1,unlocked:1,stages:{},endless:{best:0,kills:0},total:0,mute:false,money:0,earned:0,items:{},tech:{}});
 let save=fresh();
 try{const s=JSON.parse(localStorage.getItem(KEY));if(s)save=Object.assign(save,s)}catch(e){}
 function store(){try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}document.querySelectorAll('.mny').forEach(m=>m.textContent=save.money)}
@@ -205,21 +218,26 @@ const ITEMS={
 };
 const WEAPONS={
   fist:{n:'拳頭',e:'👊',d:'要靠很近才打得到，但是很痛',price:0,dmg:1.6},
+  glove:{n:'拳套',e:'🥊',d:'一樣要靠近，但比空手痛很多',price:100,dmg:2.4},
   bow:{n:'弓箭',e:'🏹',d:'射很遠，一箭可以穿過 3 個壞蛋',price:150,range:9,rate:1.4,dmg:1.8,speed:22,pierce:3,fury:1},
   pistol:{n:'手槍',e:'🔫',d:'遠遠地一發一發打',price:300,range:8,rate:1,dmg:1.2,speed:28,fury:1},
   shotgun:{n:'散彈槍',e:'💥',d:'一次噴 5 顆子彈，近的超痛',price:600,range:6,rate:1.8,dmg:.9,speed:24,pellets:5,spread:.55,fury:.4},
   mg:{n:'機關槍',e:'🔥',d:'噠噠噠噠！射超快',price:1000,range:9,rate:.35,dmg:.55,speed:30,fury:.4}
 };
+const BASE={atk:{n:'攻擊力',e:'⚔️',u:2,suf:'',max:50,cost:30},hp:{n:'血量',e:'❤️',u:10,suf:'',max:50,cost:30},spd:{n:'攻擊速度',e:'⚡',u:2,suf:'%',max:25,cost:40},mov:{n:'走路速度',e:'👟',u:1,suf:'%',max:20,cost:40},coin:{n:'賺錢',e:'💰',u:3,suf:'%',max:30,cost:50}};
+const bl=k=>save.base[k]||0,baseCost=k=>Math.round(BASE[k].cost*Math.pow(1.18,bl(k))/5)*5;
+const STAFF=[{n:'阿明',e:'🧑',col:0x12b886,cost:300,ox:-1.5,oz:1.1},{n:'小美',e:'👧',col:0xf783ac,cost:900,ox:1.5,oz:1.1},{n:'大壯',e:'🧔',col:0xfab005,cost:2500,ox:0,oz:1.9}];
+const staffUp=m=>Math.round(100*Math.pow(1.5,m.lv-1)/5)*5,staffDmg=m=>(10+2*bl('atk'))*.6*(1+.2*(m.lv-1));
 const DIFF=[{n:'簡單',cnt:.7,hp:.8,dmg:.8,coin:.8},{n:'普通',cnt:1,hp:1,dmg:1,coin:1},{n:'困難',cnt:1.5,hp:1.4,dmg:1.3,coin:1.5},{n:'地獄',cnt:2,hp:2,dmg:1.7,coin:2.2}];
 const D=()=>DIFF[save.diff]||DIFF[1];
 const tl=k=>save.tech[k]||0;
 const techCost=k=>Math.round(TECH[k].base*Math.pow(1.7,tl(k))/5)*5;
 const itemPrice=k=>Math.round(ITEMS[k].price*(1-.1*tl('f3'))/5)*5;
-function stats(){const u=tl('b11');return{dmg:10*(1+.2*tl('p1'))*(1+.5*tl('p12')),atk:.42/(1+.12*tl('p2')),range:2.3*(1+.1*tl('p3')),crit:.08*tl('p4'),critMul:2+.5*tl('p10'),splash:tl('p5')?.9+.5*tl('p5'):0,multi:1+tl('p6'),
+function stats(){const u=tl('b11');return{dmg:(10+2*bl('atk'))*(1+.2*tl('p1'))*(1+.5*tl('p12')),atk:.42/(1+.12*tl('p2'))/(1+.02*bl('spd')),range:2.3*(1+.1*tl('p3')),crit:.08*tl('p4'),critMul:2+.5*tl('p10'),splash:tl('p5')?.9+.5*tl('p5'):0,multi:1+tl('p6'),
   pierce:tl('p7'),exec:.08*tl('p9'),leech:tl('p8'),giant:1+.25*tl('p11'),
-  hp:Math.round((100+20*tl('b1'))*(1+.15*tl('b9'))),spd:5.2*(1+.08*tl('b2')),regen:tl('b3')*(u?2:1),armor:(1-.1*tl('b4'))*(u?.8:1),revive:tl('b5'),
+  hp:Math.round((100+20*tl('b1')+10*bl('hp'))*(1+.15*tl('b9'))),spd:5.2*(1+.08*tl('b2'))*(1+.01*bl('mov')),regen:tl('b3')*(u?2:1),armor:(1-.1*tl('b4'))*(u?.8:1),revive:tl('b5'),
   dodge:.08*tl('b7'),ballArmor:1-.25*tl('b10'),thorns:tl('b6'),autoShield:tl('b8'),grit:.15*tl('b12'),
-  coin:(1+.2*tl('f1'))*(1+.5*tl('f11')),pick:2.4*(1+.3*tl('f2')),fury:1+.2*tl('f4'),interest:.1*tl('f5'),
+  coin:(1+.2*tl('f1'))*(1+.5*tl('f11'))*(1+.03*bl('coin')),pick:2.4*(1+.3*tl('f2')),fury:1+.2*tl('f4'),interest:.1*tl('f5'),
   startFury:30*tl('f9'),furyPow:1+.25*tl('f10'),dur:1+.25*tl('f7'),keep:.15*tl('f8'),bigCoin:.1*tl('f6'),gift:tl('f12')}}
 
 /* ================= 聲音 (全部用程式合成) ================= */
@@ -359,12 +377,12 @@ const TYPES={
   spit:{hp:16,spd:2.1,dmg:8,sz:.9,col:0x30a46c,skin:0xc9f2d5,coin:5,pts:25},
   boss:{hp:420,spd:2.1,dmg:20,sz:2.3,col:0x2a2838,skin:0x6b6680,coin:60,pts:300}
 };
-const G={state:'menu',mode:'stage',stage:1,shots:[],furyK:1,en:[],coins:[],balls:[],dead:[],score:0,kills:0,money:0,toSpawn:0,need:0,spawnT:0,bossOut:false,boss:null,fury:0,
+const G={state:'menu',mode:'stage',stage:1,allies:[],shots:[],furyK:1,en:[],coins:[],balls:[],dead:[],score:0,kills:0,money:0,toSpawn:0,need:0,spawnT:0,bossOut:false,boss:null,fury:0,
   shake:0,endT:0,time:0,nextBoss:60,freezeT:0,rageT:0,shieldT:0,revived:false,itemCd:0,used:0};
 const H={x:0,z:0,hp:100,rot:0,walk:0,moving:false,atkT:0,punchT:0,side:1,faceT:0,st:stats()};
 const joy={on:false,id:null,ox:0,oy:0,x:0,z:0},keys={};
 
-function clearWorld(){for(const e of G.en)scene.remove(e.g);for(const d of G.dead)scene.remove(d.g);for(const c of G.coins)scene.remove(c.m);for(const b of G.balls)scene.remove(b.m);for(const b of G.shots)scene.remove(b.m);G.shots=[];G.en=[];G.dead=[];G.coins=[];G.balls=[];$('fx').innerHTML=''}
+function clearWorld(){for(const e of G.en)scene.remove(e.g);for(const d of G.dead)scene.remove(d.g);for(const c of G.coins)scene.remove(c.m);for(const b of G.balls)scene.remove(b.m);for(const b of G.shots)scene.remove(b.m);G.shots=[];for(const a of G.allies)scene.remove(a.g);G.allies=[];G.en=[];G.dead=[];G.coins=[];G.balls=[];$('fx').innerHTML=''}
 function startGame(mode,stage){
   initAudio();musicOn=true;clearWorld();
   Object.assign(G,{state:'play',mode,stage:stage||1,score:0,kills:0,money:0,spawnT:1.2,bossOut:false,boss:null,fury:0,shake:0,endT:0,time:0,nextBoss:60,freezeT:0,rageT:0,shieldT:0,revived:false,itemCd:0,used:0});
@@ -375,6 +393,8 @@ function startGame(mode,stage){
   const fR=heroMesh.userData.fR;if(weaponMesh)fR.remove(weaponMesh);weaponMesh=null;const W=WEAPONS[save.weapon]||WEAPONS.fist;G.furyK=W.fury||1;
   if(W.range){weaponMesh=save.weapon==='bow'?new THREE.Mesh(GEO.bow,mat(0x8a5a2b)):new THREE.Mesh(GEO.gun,mat(0x22222c));if(save.weapon==='bow'){weaponMesh.rotation.set(0,Math.PI/2,Math.PI/2);weaponMesh.position.z=.1}else{weaponMesh.position.set(0,.04,.22);if(save.weapon!=='pistol'){weaponMesh.scale.set(1.2,1,1.7);weaponMesh.position.z=.3}}fR.add(weaponMesh)}
   setTheme(mode==='stage'?Math.floor((G.stage-1)/5):0);
+  save.staff.forEach((m,i)=>{const S=STAFF[i],g=makeChar(S.col,0xffd8a8,{band:0xffffff}),W=WEAPONS[m.w]||WEAPONS.fist,wm=mkWeapon(m.w);if(wm)g.userData.fR.add(wm);
+    g.scale.setScalar(.95);g.position.set(S.ox,0,S.oz);scene.add(g);G.allies.push({g,S,W,x:S.ox,z:S.oz,dmg:staffDmg(m)*(W.dmg||1),atkT:.5+i*.15,punchT:0,rot:0,walk:0,moving:false,side:1})});
   joy.on=false;$('joy').style.display='none';$('bossw').style.display='none';$('prog').style.display=mode==='stage'?'':'none';
   $('hint').style.opacity=save.total<30?1:0;buildBar();showOv(null);$('hud').classList.add('on');
 }
@@ -488,6 +508,7 @@ function update(dt){
       if(W.range)(W.pierce?sfx.bow:sfx.gun)();
     }
   }
+  updateAllies(dt);
   // 子彈
   for(const b of G.shots){
     for(let k=0;k<2&&b.life>0;k++){b.x+=b.vx*dt*.5;b.z+=b.vz*dt*.5;b.life-=dt*.5;
@@ -530,6 +551,24 @@ function update(dt){
   G.balls=G.balls.filter(b=>b.t<=4);
   if(G.boss)$('bossw').firstChild.style.width=Math.max(0,G.boss.hp/G.boss.max*100)+'%';
 }
+function mkWeapon(k){const W=WEAPONS[k];if(!W||!W.range)return null;const bow=k==='bow',m=bow?new THREE.Mesh(GEO.bow,mat(0x8a5a2b)):new THREE.Mesh(GEO.gun,mat(0x22222c));
+  if(bow){m.rotation.set(0,Math.PI/2,Math.PI/2);m.position.z=.1}else{m.position.set(0,.04,.22);if(k!=='pistol'){m.scale.set(1.2,1,1.7);m.position.z=.3}}return m}
+function fireShot(x,z,a,W,d,rng){const m=new THREE.Mesh(GEO.bullet,W.pierce?arrowMat:bulletMat);m.rotation.y=a;if(W.pierce)m.scale.z=2.2;scene.add(m);
+  G.shots.push({m,x:x+Math.sin(a)*.8,z:z+Math.cos(a)*.8,vx:Math.sin(a)*W.speed,vz:Math.cos(a)*W.speed,dmg:d,crit:false,pierce:W.pierce||1,hit:[],life:rng/W.speed*1.25})}
+function updateAllies(dt){
+  for(const a of G.allies){
+    const W=a.W,rng=W.range||2.3;let best=null,bd=1e9;
+    for(const e of G.en){const d=Math.hypot(e.x-a.x,e.z-a.z)-e.r;if(d<bd){bd=d;best=e}}
+    let tx=H.x+a.S.ox,tz=H.z+a.S.oz,stop=.4;
+    if(!W.range&&best&&Math.hypot(best.x-H.x,best.z-H.z)<6.5){tx=best.x;tz=best.z;stop=1.2+best.r}
+    const dx=tx-a.x,dz=tz-a.z,d=Math.hypot(dx,dz);a.moving=d>stop;
+    if(a.moving){const sp=Math.min((d-stop)*6+1,H.st.spd*1.2);a.x+=dx/d*sp*dt;a.z+=dz/d*sp*dt;a.walk+=dt;a.rot=Math.atan2(dx,dz)}
+    a.atkT-=dt;a.punchT=Math.max(0,a.punchT-dt);
+    if(a.atkT<=0&&best&&bd<=rng){a.rot=Math.atan2(best.x-a.x,best.z-a.z);a.punchT=.14;a.atkT=.42*(W.rate||1);if(!W.range)a.side=-a.side;
+      const dm=a.dmg*(.9+Math.random()*.2);
+      if(W.range){const n=W.pellets||1;for(let j=0;j<n;j++)fireShot(a.x,a.z,a.rot+(n>1?(j/(n-1)-.5)*W.spread:0),W,dm,rng)}else damage(best,dm,false)}
+  }
+}
 function splash(e,ex,ez,d){const r=H.st.splash;if(!r)return;ring(ex,ez,r,0xffffff);for(const o of G.en.slice())if(o!==e&&Math.hypot(o.x-ex,o.z-ez)<r+o.r)damage(o,d*.5,false,true)}
 function shoot(x,z,ux,uz,spd,dmg,m){const me=new THREE.Mesh(GEO.ball,m);scene.add(me);G.balls.push({m:me,x:x+ux*.6,z:z+uz*.6,vx:ux*spd,vz:uz*spd,dmg,t:0});if(m===ballMat)sfx.shoot()}
 function updateCoins(dt){
@@ -569,6 +608,7 @@ function render(dt){
     animChar(heroMesh,H.walk,H.moving,Math.min(1,H.punchT/.09),H.side);
     heroMesh.scale.setScalar(G.rageT>0?1.35:1.15);bubble.visible=G.shieldT>0;
     heroMesh.visible=!(G.shieldT>0&&G.shieldT<1&&Math.floor(G.shieldT*12)%2)}
+  for(const a of G.allies){a.g.position.set(a.x,0,a.z);let dr=a.rot-a.g.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));a.g.rotation.y+=dr*Math.min(1,dt*18);animChar(a.g,a.walk,a.moving,Math.min(1,a.punchT/.09),a.side)}
   for(const e of G.en){e.g.position.set(e.x,0,e.z);e.g.rotation.y=e.rot||0;e.g.scale.setScalar(e.T.sz*(e.flash>0?1.25:1));animChar(e.g,e.walk,e.moving&&G.freezeT<=0,Math.min(1,e.punchT/.12),1)}
   // 鏡頭
   const k=cam.aspect<.8?1:.72,sh=G.shake;
@@ -633,6 +673,29 @@ function buildShop(){
     const b=document.createElement('button');b.textContent=n>=9?'滿了':'💰 '+p;b.disabled=n>=9||save.money<p;
     b.onclick=()=>{initAudio();if(save.money<p||n>=9){sfx.no();return}save.money-=p;save.items[k]=n+1;sfx.buy();store();buildShop()};d.appendChild(b);L.appendChild(d)}
 }
+function buildBase(){
+  const L=$('baseList');L.innerHTML='';
+  for(const k in BASE){const B=BASE[k],l=bl(k),c=baseCost(k),d=document.createElement('div');d.className='it';
+    d.innerHTML=`<div class="e">${B.e}</div><div class="t"><b>${B.n} <i>Lv.${l}</i></b>現在 +${l*B.u}${B.suf}${l<B.max?' → +'+(l+1)*B.u+B.suf:'（最高）'}</div>`;
+    const b=document.createElement('button');b.textContent=l>=B.max?'滿了':'💰 '+c;b.disabled=l>=B.max||save.money<c;
+    b.onclick=()=>{initAudio();if(save.money<c)return;save.money-=c;save.base[k]=l+1;sfx.buy();store();buildBase()};d.appendChild(b);L.appendChild(d)}
+}
+function buildStaff(){
+  const L=$('staffList');L.innerHTML='';
+  STAFF.forEach((S,i)=>{const m=save.staff[i],d=document.createElement('div');d.className='it col';
+    const top=document.createElement('div');top.className='r';const b=document.createElement('button');
+    if(!m){const can=i===save.staff.length;top.innerHTML=`<div class="e">${S.e}</div><div class="t"><b>${S.n}</b>${can?'請他來幫你打壞蛋':'🔒 要先請上面那位'}</div>`;
+      b.textContent='💰 '+S.cost;b.disabled=!can||save.money<S.cost;b.onclick=()=>{initAudio();if(save.money<S.cost)return;save.money-=S.cost;save.staff.push({w:'fist',own:{},lv:1});sfx.buy();store();buildStaff()};
+      top.appendChild(b);d.appendChild(top)}
+    else{const W=WEAPONS[m.w],c=staffUp(m);top.innerHTML=`<div class="e">${S.e}</div><div class="t"><b>${S.n} <i>Lv.${m.lv}</i></b>${W.e} ${W.n}　攻擊力 ${Math.round(staffDmg(m)*(W.dmg||1))}</div>`;
+      b.textContent=m.lv>=10?'滿級':'升級 💰'+c;b.disabled=m.lv>=10||save.money<c;b.onclick=()=>{initAudio();if(save.money<c)return;save.money-=c;m.lv++;sfx.buy();store();buildStaff()};
+      top.appendChild(b);d.appendChild(top);const ws=document.createElement('div');ws.className='ws';
+      for(const k in WEAPONS){const w=WEAPONS[k],own=k==='fist'||m.own[k],eq=m.w===k,wb=document.createElement('button');wb.className=eq?'b4':own?'b2':'b3';
+        wb.innerHTML=w.e+`<span>${eq?'使用中':own?'裝備':'💰'+w.price}</span>`;wb.disabled=!own&&save.money<w.price;
+        wb.onclick=()=>{initAudio();if(!own){if(save.money<w.price)return;save.money-=w.price;m.own[k]=true}m.w=k;sfx.buy();store();buildStaff()};ws.appendChild(wb)}
+      d.appendChild(ws)}
+    L.appendChild(d)});
+}
 let selT='p1';
 function buildTree(){
   const T=$('tree'),cw=Math.min(60,(innerWidth-16)/6),rh=78,W=cw*6;T.style.width=W+'px';T.style.height=(rh*6+125)+'px';
@@ -651,6 +714,8 @@ function buildTree(){
 function on(id,f){$(id).addEventListener('click',()=>{initAudio();sfx.click();f()})}
 on('bStage',()=>{buildGrid();showOv('stages')});on('bEndless',()=>startGame('endless'));on('bHow',()=>showOv('how'));
 on('bShop',()=>{backTo='menu';buildShop();showOv('shop')});on('bTech',()=>{backTo='menu';buildTree();showOv('tech')});
+on('bBase',()=>{backTo='menu';buildBase();showOv('base')});on('bStaff',()=>{backTo='menu';buildStaff();showOv('staff')});
+on('bBase2',()=>{backTo='result';buildBase();showOv('base')});on('bStaff2',()=>{backTo='result';buildStaff();showOv('staff')});
 on('bShop2',()=>{backTo='result';buildShop();showOv('shop')});on('bTech2',()=>{backTo='result';buildTree();showOv('tech')});
 on('bRec',()=>{let stars=0,cleared=0,sum=0,tech=0;for(const k in save.stages){stars+=save.stages[k].stars;sum+=save.stages[k].best;if(save.stages[k].stars)cleared++}for(const k in save.tech)tech+=save.tech[k];
   $('recBody').innerHTML=`過關數<b>${cleared} / ${MAXSTAGE}</b><br>星星<b>★ ${stars} / ${MAXSTAGE*3}</b><br>闖關總分<b>${sum}</b><br>無盡最高分<b>${save.endless.best}</b><br>無盡最多打倒<b>${save.endless.kills}</b><br>總共打倒<b>${save.total}</b><br>總共賺過<b>💰 ${save.earned}</b><br>科技等級<b>${tech}</b>`;showOv('rec')});
@@ -663,7 +728,7 @@ on('bRetryP',()=>{bank(0);store();startGame(G.mode,G.stage)});on('bQuit',toMenu)
 on('bNext',()=>startGame('stage',G.stage+1));on('bRetry',()=>startGame(G.mode,G.stage));on('bMenu',toMenu);
 document.querySelectorAll('.back').forEach(b=>b.addEventListener('click',()=>{sfx.click();showOv(backTo)}));
 setMute(save.mute);store();
-Object.assign(window,{WEAPONS,G,H,save:()=>save,startGame,useItem,fury,joy,stats,TECH});
+Object.assign(window,{BASE,STAFF,WEAPONS,G,H,save:()=>save,startGame,useItem,fury,joy,stats,TECH});
 requestAnimationFrame(loop);
 </script>
 </body>
